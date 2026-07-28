@@ -1,0 +1,77 @@
+{
+  "kind": "collectionType",
+  "collectionName": "pedidos",
+  "info": {
+    "singularName": "pedido",
+    "pluralName": "pedidos",
+    "displayName": "Pedido"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "total": {
+      "type": "decimal",
+      "required": true
+    },
+    "estado_despacho": {
+      "type": "enumeration",
+      "required": true,
+      "default": "pendiente",
+      "enum": ["pendiente", "en_preparacion", "despachado", "entregado"]
+    },
+    "direccion_entrega": {
+      "type": "text",
+      "required": true
+    },
+    "telefono_contacto": {
+      "type": "string",
+      "required": true
+    },
+    "nota_despacho": {
+      "type": "text"
+    },
+    "observacion_pago": {
+      "type": "text"
+    },
+    "detalle_items": {
+      "type": "json",
+      "required": true
+    },
+    "cliente": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "pedidos_cliente"
+    },
+    "vendedora": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "pedidos_vendedora"
+    },
+    "productos": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::producto.producto"
+    },
+    "metodo_pago": {
+      "type": "enumeration",
+      "required": true,
+      "enum": ["deposito_bancario", "transferencia"]
+    },
+    "estado_pago": {
+      "type": "enumeration",
+      "required": true,
+      "default": "pendiente_verificacion",
+      "enum": ["pendiente_verificacion", "aprobado", "rechazado"]
+    },
+    "comprobante_pago": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": ["images", "files"]
+    }
+  }
+}
