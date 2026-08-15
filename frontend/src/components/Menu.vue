@@ -9,7 +9,7 @@
             class="brand-logo"
           />
           <span class="brand-copy">
-            <span class="brand-kicker">Fundacion ALDEA</span>
+            <span class="brand-kicker">Fundación ALDEA</span>
             <span class="brand-title">Ecommerce Aldea</span>
           </span>
         </RouterLink>
@@ -70,12 +70,12 @@
 
           <span v-if="token" class="ui item logout" @click="logout">
             <i class="sign-out icon"></i>
-            Cerrar sesion
+            Cerrar sesión
           </span>
 
           <RouterLink v-else class="item login-item" to="/login">
             <i class="user outline icon"></i>
-            Iniciar sesion
+            Iniciar sesión
           </RouterLink>
         </div>
       </nav>

@@ -57,6 +57,11 @@ const totalPedidosConComprobante = computed(
     sellerPedidos.value.filter((pedido) => Boolean(pedido.comprobantePagoUrl))
       .length,
 );
+const customerPaymentMessages = computed(() =>
+  sellerPedidos.value
+    .filter((pedido) => pedido.observacionPago?.trim())
+    .slice(0, 3),
+);
 const hasEntregasSinPagoAprobado = computed(() =>
   sellerPedidos.value.some(
     (pedido) =>
@@ -323,6 +328,42 @@ function handlePhoneInput(event: Event) {
   formData.value.telefono = sanitizedValue;
 }
 
+function isValidEmail(value: string) {
+  const email = value.trim().toLowerCase();
+
+  if (!email || email.length > 254 || email.includes("..")) {
+    return false;
+  }
+
+  const basicPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  if (!basicPattern.test(email)) {
+    return false;
+  }
+
+  const [localPart, domainPart] = email.split("@");
+
+  if (!localPart || !domainPart) {
+    return false;
+  }
+
+  if (
+    localPart.startsWith(".") ||
+    localPart.endsWith(".") ||
+    domainPart.startsWith("-") ||
+    domainPart.endsWith("-")
+  ) {
+    return false;
+  }
+
+  return domainPart
+    .split(".")
+    .every(
+      (label) =>
+        label.length > 0 && !label.startsWith("-") && !label.endsWith("-"),
+    );
+}
+
 async function saveProfile() {
   errorMessage.value = "";
   successMessage.value = "";
@@ -336,8 +377,13 @@ async function saveProfile() {
     return;
   }
 
+  if (!isValidEmail(correo)) {
+    errorMessage.value = "Ingresa un correo electrónico válido.";
+    return;
+  }
+
   if (telefono && telefono.length !== 10) {
-    errorMessage.value = "El telefono debe tener exactamente 10 digitos.";
+    errorMessage.value = "El teléfono debe tener exactamente 10 digitos.";
     return;
   }
 
@@ -377,7 +423,7 @@ onMounted(async () => {
       <div class="profile-grid">
         <article class="ui raised segment profile-summary-card">
           <p class="profile-eyebrow">Mi perfil</p>
-          <h1 class="profile-title">Gestion de perfil</h1>
+          <h1 class="profile-title">Gestión de perfil</h1>
           <p class="profile-copy">
             Revisa y actualiza los datos de tu cuenta autenticada.
           </p>
@@ -522,6 +568,22 @@ onMounted(async () => {
                 </div>
               </div>
 
+              <div
+                v-if="customerPaymentMessages.length"
+                class="customer-payment-alerts"
+              >
+                <p class="customer-payment-title">Notificaciones de pago</p>
+                <ul>
+                  <li
+                    v-for="pedido in customerPaymentMessages"
+                    :key="pedido.documentId"
+                  >
+                    <strong>Pedido {{ pedido.codigoPedido }}</strong>
+                    <span>{{ pedido.observacionPago }}</span>
+                  </li>
+                </ul>
+              </div>
+
               <div class="customer-loyalty-footnote">
                 <span>
                   Desde Mis pedidos puedes revisar cada orden y descargar el
@@ -559,6 +621,9 @@ onMounted(async () => {
                 v-model="formData.correo"
                 type="email"
                 placeholder="correo@ejemplo.com"
+                autocomplete="email"
+                inputmode="email"
+                required
                 :disabled="loading || saving"
               />
             </div>
@@ -574,7 +639,7 @@ onMounted(async () => {
                 @input="handlePhoneInput"
               />
               <small class="profile-help-text">
-                Solo numeros. Debe tener exactamente 10 digitos.
+                Solo números. Debe tener exactamente 10 digitos.
               </small>
             </div>
 
@@ -831,7 +896,36 @@ onMounted(async () => {
   color: #a3332d;
 }
 
+.customer-payment-alerts {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  background: rgba(22, 163, 74, 0.08);
+}
+
+.customer-payment-title {
+  margin: 0 0 0.7rem;
+  font-weight: 700;
+  color: #166534;
+}
+
+.customer-payment-alerts ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.5rem;
+  color: #14532d;
+}
+
+.customer-payment-alerts li {
+  display: grid;
+  gap: 0.2rem;
+  line-height: 1.45;
+}
+
 .customer-loyalty-footnote {
+  margin-top: 1rem;
   padding: 0.85rem 1rem;
   border-radius: 14px;
   background: #eef5ff;

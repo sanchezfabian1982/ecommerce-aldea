@@ -1,7 +1,7 @@
 <template>
   <section class="dispatch-page">
     <header class="dispatch-header">
-      <h1 class="ui header">Gestion de despachos</h1>
+      <h1 class="ui header">Gestión de despachos</h1>
       <p>Administra el avance de tus pedidos con estados secuenciales.</p>
     </header>
 
@@ -166,7 +166,7 @@
         </div>
 
         <div v-if="pedido.observacionPago" class="payment-note">
-          <strong>Observacion de pago:</strong> {{ pedido.observacionPago }}
+          <strong>Observación de pago:</strong> {{ pedido.observacionPago }}
         </div>
 
         <div class="dispatch-actions">
@@ -305,7 +305,7 @@ const metodoPagoLabel = (metodo: MetodoPago) => {
 const estadoPagoLabel = (estado: EstadoPago) => {
   switch (estado) {
     case "pendiente_verificacion":
-      return "Pendiente de verificacion";
+      return "Pendiente de verificación";
     case "aprobado":
       return "Pago aprobado";
     case "rechazado":
@@ -361,6 +361,9 @@ const actionLabel = (estado: PedidoEstadoDespacho) => {
   }
 };
 
+const buildEntregaMessage = (pedido: Pedido) =>
+  `Tu pedido ${pedido.codigoPedido} fue entregado correctamente. Gracias por comprar en Fundación ALDEA.`;
+
 const closeDespachoNote = () => {
   activeNotePedidoId.value = null;
   notaDespacho.value = "";
@@ -393,13 +396,32 @@ const togglePagoNote = (pedidoDocumentId: string) => {
   notaPago.value = "";
 };
 
+const buildPagoMessage = (estadoPago: EstadoPago, note = "") => {
+  const baseMessage =
+    estadoPago === "aprobado"
+      ? "Tu pago ha sido aprobado y tu pedido puede continuar con su proceso de preparación."
+      : "Tu pago fue rechazado. Revisa el comprobante o la información de pago e intenta nuevamente.";
+
+  if (!note?.trim()) {
+    return baseMessage;
+  }
+
+  return `${baseMessage} Motivo: ${note.trim()}`;
+};
+
 const updatePago = async (pedido: Pedido, estadoPago: EstadoPago) => {
   actionLoadingId.value = pedido.documentId;
   successMessage.value = "";
   errorMessage.value = "";
 
   try {
-    await updatePedidoPagoApi(pedido.documentId, { estadoPago });
+    const mensajeCliente = buildPagoMessage(estadoPago);
+
+    await updatePedidoPagoApi(pedido.documentId, {
+      estadoPago,
+      observacionPago: mensajeCliente,
+    });
+
     successMessage.value = `El pago del pedido ${pedido.codigoPedido} cambio a ${estadoPagoLabel(estadoPago)}.`;
   } catch (error) {
     errorMessage.value =
@@ -417,9 +439,11 @@ const rejectPago = async (pedido: Pedido, note = "") => {
   errorMessage.value = "";
 
   try {
+    const mensajeCliente = buildPagoMessage("rechazado", note);
+
     await updatePedidoPagoApi(pedido.documentId, {
       estadoPago: "rechazado",
-      observacionPago: note,
+      observacionPago: mensajeCliente,
     });
     successMessage.value = `El pago del pedido ${pedido.codigoPedido} fue rechazado.`;
     closePagoNote();
@@ -445,9 +469,17 @@ const advancePedido = async (pedido: Pedido, note = "") => {
   errorMessage.value = "";
 
   try {
+    const deliveryNote =
+      nextEstado === "entregado" ? buildEntregaMessage(pedido) : "";
+
     await updatePedidoDespachoApi(pedido.documentId, {
       estadoDespacho: nextEstado,
-      notaDespacho: nextEstado === "despachado" ? note : "",
+      notaDespacho:
+        nextEstado === "despachado"
+          ? note
+          : nextEstado === "entregado"
+            ? deliveryNote
+            : "",
     });
 
     successMessage.value = `El pedido ${pedido.codigoPedido} cambio a ${estadoLabel(nextEstado)}.`;

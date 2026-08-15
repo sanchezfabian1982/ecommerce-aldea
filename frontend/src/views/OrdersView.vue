@@ -42,11 +42,27 @@
         <div class="order-delivery">
           <span><strong>Entrega:</strong> {{ pedido.direccionEntrega }}</span>
           <span><strong>Telefono:</strong> {{ pedido.telefonoContacto }}</span>
-          <span v-if="pedido.notaDespacho">
-            <strong>Nota de despacho:</strong> {{ pedido.notaDespacho }}
+          <span
+            v-if="pedido.notaDespacho"
+            :class="[
+              'order-delivery-note',
+              {
+                'order-delivery-confirmed':
+                  pedido.estadoDespacho === 'entregado',
+              },
+            ]"
+          >
+            <strong>
+              {{
+                pedido.estadoDespacho === "entregado"
+                  ? "Confirmación de entrega:"
+                  : "Nota de despacho:"
+              }}
+            </strong>
+            {{ pedido.notaDespacho }}
           </span>
           <span v-if="pedido.observacionPago" class="order-payment-note">
-            <strong>Observacion de pago:</strong> {{ pedido.observacionPago }}
+            <strong>Estado de pago:</strong> {{ pedido.observacionPago }}
           </span>
         </div>
 
@@ -225,8 +241,24 @@ onMounted(async () => {
   color: var(--aldea-blue-700);
 }
 
+.order-delivery-note {
+  padding: 0.35rem 0;
+}
+
+.order-delivery-confirmed {
+  color: #166534;
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+}
+
 .order-payment-note {
-  color: var(--aldea-red-700);
+  color: var(--aldea-green-700);
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.18);
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
 }
 
 .order-items {

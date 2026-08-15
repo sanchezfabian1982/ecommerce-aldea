@@ -27,7 +27,7 @@ async function login() {
     await router.push("/orders");
   } catch (err) {
     errorApi.value =
-      err instanceof Error ? err.message : "Ocurrio un error al iniciar sesion";
+      err instanceof Error ? err.message : "Ocurrió un error al iniciar sesión";
   }
 }
 </script>
@@ -35,7 +35,7 @@ async function login() {
 <template>
   <section class="ui raised segment login-section">
     <p class="login-kicker">Acceso seguro</p>
-    <h2 class="ui header login-title">Iniciar sesion</h2>
+    <h2 class="ui header login-title">Iniciar sesión</h2>
     <p class="login-copy">
       Entra a tu cuenta para gestionar pedidos, productos o compras solidarias.
     </p>
@@ -49,7 +49,7 @@ async function login() {
         />
       </div>
       <div class="field">
-        <label>Contrasena</label>
+        <label>Contraseña</label>
         <input
           v-model="formData.contrasena"
           type="password"

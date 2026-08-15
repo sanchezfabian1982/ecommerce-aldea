@@ -188,95 +188,127 @@
     <div v-else-if="productosDeLaVendedora.length === 0" class="ui message">
       <p>No tienes productos publicados todavía.</p>
     </div>
-    <div v-else class="ui stackable cards seller-cards">
-      <article
-        v-for="producto in productosDeLaVendedora"
-        :key="producto.documentId"
-        class="ui fluid card seller-card"
-      >
-        <div class="content">
-          <div class="header">{{ producto.nombre }}</div>
-          <div class="meta">Vende: {{ producto.vendedoraNombre }}</div>
-          <div class="description product-copy">
-            <p>{{ producto.descripcion }}</p>
-            <p><strong>Precio:</strong> {{ formatPrice(producto.precio) }}</p>
-            <p><strong>Stock:</strong> {{ producto.stock ?? 0 }}</p>
-            <p><strong>Categoria:</strong> {{ producto.categoriaNombre }}</p>
+    <div v-else>
+      <div class="product-search-box">
+        <div class="product-search-row">
+          <div class="ui icon input fluid">
+            <input
+              v-model.trim="searchTerm"
+              type="text"
+              placeholder="Buscar por titulo del producto"
+            />
+            <i class="search icon"></i>
           </div>
-        </div>
 
-        <div
-          v-if="canManageProducto(producto)"
-          class="extra content product-actions"
-        >
           <button
             type="button"
-            class="ui teal button"
-            :disabled="restockingProductId === producto.documentId"
-            @click="openRestockForm(producto)"
+            class="ui button"
+            :disabled="!searchTerm"
+            @click="clearSearch"
           >
-            {{
-              activeRestockProductId === producto.documentId
-                ? "Cerrar abastecimiento"
-                : "Abastecer"
-            }}
-          </button>
-          <button type="button" class="ui button" @click="startEdit(producto)">
-            Editar
-          </button>
-          <button
-            type="button"
-            class="ui negative button"
-            :disabled="deletingProductId === producto.documentId"
-            @click="removeProducto(producto)"
-          >
-            {{
-              deletingProductId === producto.documentId
-                ? "Eliminando..."
-                : "Eliminar"
-            }}
+            Limpiar
           </button>
         </div>
+      </div>
 
-        <div
-          v-if="activeRestockProductId === producto.documentId"
-          class="extra content restock-panel"
+      <div v-if="productosFiltrados.length === 0" class="ui message">
+        <p>No se encontraron productos con ese título.</p>
+      </div>
+
+      <div v-else class="ui stackable cards seller-cards">
+        <article
+          v-for="producto in productosFiltrados"
+          :key="producto.documentId"
+          class="ui fluid card seller-card"
         >
-          <form class="ui form" @submit.prevent="submitRestock(producto)">
-            <div class="field">
-              <label>Unidades a agregar</label>
-              <input
-                v-model.number="restockQuantity"
-                type="number"
-                min="1"
-                step="1"
-                placeholder="Ej. 10"
-              />
+          <div class="content">
+            <div class="header">{{ producto.nombre }}</div>
+            <div class="meta">Vende: {{ producto.vendedoraNombre }}</div>
+            <div class="description product-copy">
+              <p>{{ producto.descripcion }}</p>
+              <p><strong>Precio:</strong> {{ formatPrice(producto.precio) }}</p>
+              <p><strong>Stock:</strong> {{ producto.stock ?? 0 }}</p>
+              <p><strong>Categoria:</strong> {{ producto.categoriaNombre }}</p>
             </div>
+          </div>
 
-            <div class="restock-actions">
-              <button
-                type="submit"
-                class="ui teal button"
-                :class="{
-                  loading: restockingProductId === producto.documentId,
-                }"
-                :disabled="restockingProductId === producto.documentId"
-              >
-                Guardar stock
-              </button>
-              <button
-                type="button"
-                class="ui button"
-                :disabled="restockingProductId === producto.documentId"
-                @click="closeRestockForm"
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </div>
-      </article>
+          <div
+            v-if="canManageProducto(producto)"
+            class="extra content product-actions"
+          >
+            <button
+              type="button"
+              class="ui teal button"
+              :disabled="restockingProductId === producto.documentId"
+              @click="openRestockForm(producto)"
+            >
+              {{
+                activeRestockProductId === producto.documentId
+                  ? "Cerrar abastecimiento"
+                  : "Abastecer"
+              }}
+            </button>
+            <button
+              type="button"
+              class="ui button"
+              @click="startEdit(producto)"
+            >
+              Editar
+            </button>
+            <button
+              type="button"
+              class="ui negative button"
+              :disabled="deletingProductId === producto.documentId"
+              @click="removeProducto(producto)"
+            >
+              {{
+                deletingProductId === producto.documentId
+                  ? "Eliminando..."
+                  : "Eliminar"
+              }}
+            </button>
+          </div>
+
+          <div
+            v-if="activeRestockProductId === producto.documentId"
+            class="extra content restock-panel"
+          >
+            <form class="ui form" @submit.prevent="submitRestock(producto)">
+              <div class="field">
+                <label>Unidades a agregar</label>
+                <input
+                  v-model.number="restockQuantity"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="Ej. 10"
+                />
+              </div>
+
+              <div class="restock-actions">
+                <button
+                  type="submit"
+                  class="ui teal button"
+                  :class="{
+                    loading: restockingProductId === producto.documentId,
+                  }"
+                  :disabled="restockingProductId === producto.documentId"
+                >
+                  Guardar stock
+                </button>
+                <button
+                  type="button"
+                  class="ui button"
+                  :disabled="restockingProductId === producto.documentId"
+                  @click="closeRestockForm"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </article>
+      </div>
     </div>
   </section>
 </template>
@@ -316,6 +348,7 @@ const restockingProductId = ref<string | null>(null);
 const restockQuantity = ref(1);
 const loadingProductos = ref(false);
 const loadError = ref("");
+const searchTerm = ref("");
 const submitting = ref(false);
 const successMessage = ref("");
 const errorMessage = ref("");
@@ -342,6 +375,24 @@ const formData = ref<ProductoFormData>({
 const productosDeLaVendedora = computed(() =>
   productos.value.filter((producto) => canManageProducto(producto)),
 );
+const productosFiltrados = computed(() => {
+  const query = searchTerm.value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (!query) {
+    return productosDeLaVendedora.value;
+  }
+
+  return productosDeLaVendedora.value.filter((producto) =>
+    producto.nombre
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .includes(query),
+  );
+});
 const isImageReady = computed(
   () =>
     Boolean(formData.value.imagen) &&
@@ -380,6 +431,10 @@ function resetForm() {
     categoriaDocumentId: "",
     imagen: null,
   };
+}
+
+function clearSearch() {
+  searchTerm.value = "";
 }
 
 function normalizeCategorias(payload: unknown): CategoriaOption[] {
@@ -875,6 +930,23 @@ onBeforeUnmount(() => {
 
 .seller-cards {
   margin-top: 1rem;
+}
+
+.product-search-box {
+  margin: 0.75rem 0 1rem;
+}
+
+.product-search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .product-search-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .seller-card {

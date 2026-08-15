@@ -123,7 +123,7 @@ export async function loginApi(formData: LoginFormData): Promise<AuthResponse> {
       throw new Error("Correo o contrasena incorrectos. Intenta nuevamente.");
     }
 
-    throw new Error(rawMessage || "No se pudo iniciar sesion");
+    throw new Error(rawMessage || "No se pudo iniciar sesión");
   }
 
   return result as AuthResponse;

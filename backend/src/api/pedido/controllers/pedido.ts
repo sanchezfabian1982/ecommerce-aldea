@@ -525,7 +525,8 @@ export default factories.createCoreController(
         }
 
         if (data.estado_pago === "aprobado") {
-          updateData.observacion_pago = "";
+          const approvedNote = data.observacion_pago?.trim();
+          updateData.observacion_pago = approvedNote ?? "";
         }
 
         updateData.estado_pago = data.estado_pago;
