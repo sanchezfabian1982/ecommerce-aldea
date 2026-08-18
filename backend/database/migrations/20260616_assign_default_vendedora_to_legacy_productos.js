@@ -2,6 +2,20 @@
 
 module.exports = {
   async up(knex) {
+    // 1. Verificar si las tablas necesarias existen en la base de datos
+    const hasUpUsers = await knex.schema.hasTable("up_users");
+    const hasProductos = await knex.schema.hasTable("productos");
+    const hasLinkTable = await knex.schema.hasTable("productos_vendedora_lnk");
+
+    // Si la base de datos es nueva y no tiene estas tablas, omitimos la migración
+    if (!hasUpUsers || !hasProductos || !hasLinkTable) {
+      console.log(
+        "[migration] Las tablas necesarias aún no existen (base de datos limpia). Omitiendo migración.",
+      );
+      return;
+    }
+
+    // 2. Ejecutar la lógica original de manera segura
     const defaultSeller = await knex("up_users")
       .select("id", "email", "username", "nombre")
       .where({ rol_tienda: "vendedora" })
