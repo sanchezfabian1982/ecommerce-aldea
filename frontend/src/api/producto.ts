@@ -282,7 +282,7 @@ export async function createProductoApi(
   const token = getTokenApi();
 
   if (!token) {
-    throw new Error("Debes iniciar sesion para publicar productos");
+    throw new Error("Debes iniciar sesión para publicar productos");
   }
 
   if (!formData.imagen) {
@@ -347,7 +347,7 @@ export async function updateProductoApi(
   const token = getTokenApi();
 
   if (!token) {
-    throw new Error("Debes iniciar sesion para actualizar productos");
+    throw new Error("Debes iniciar sesión para actualizar productos");
   }
 
   const user = await getCurrentUserApi(token);
@@ -414,7 +414,7 @@ export async function deleteProductoApi(documentId: string): Promise<void> {
   const token = getTokenApi();
 
   if (!token) {
-    throw new Error("Debes iniciar sesion para eliminar productos");
+    throw new Error("Debes iniciar sesión para eliminar productos");
   }
 
   const response = await fetch(`${API_URL}/productos/${documentId}`, {
